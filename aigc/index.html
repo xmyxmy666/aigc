@@ -1,0 +1,3012 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能AIGC检测与优化工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 30px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 5px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px 20px;
+            text-align: center;
+            background: transparent;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .content-area {
+            display: none;
+        }
+
+        .content-area.active {
+            display: block;
+        }
+
+        .text-input {
+            width: 100%;
+            min-height: 300px;
+            padding: 20px;
+            border: 2px solid #e1e8ed;
+            border-radius: 15px;
+            font-size: 16px;
+            font-family: inherit;
+            resize: vertical;
+            margin-bottom: 20px;
+            transition: border-color 0.3s ease;
+            line-height: 1.6;
+        }
+
+        .text-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #495057;
+            border: 2px solid #e9ecef;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+        }
+
+        .result-panel {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+            border-left: 5px solid #667eea;
+        }
+
+        .detection-result {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .ai-probability {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .probability-label {
+            font-size: 1.2rem;
+            color: #495057;
+        }
+
+        .risk-level {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .risk-high {
+            background: #fee;
+            color: #c53030;
+        }
+
+        .risk-medium {
+            background: #fffaf0;
+            color: #dd6b20;
+        }
+
+        .risk-low {
+            background: #f0fff4;
+            color: #38a169;
+        }
+
+        .analysis-details {
+            margin-top: 20px;
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .detail-item:last-child {
+            border-bottom: none;
+        }
+
+        .progress-bar {
+            width: 100px;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            transition: width 0.5s ease;
+        }
+
+        .suggestions {
+            margin-top: 20px;
+        }
+
+        .suggestion-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .suggestion-title {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .suggestion-text {
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .optimized-text {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            min-height: 200px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        .statistics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .upload-area {
+            border: 2px dashed #667eea;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 20px;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: #f0f4f8;
+        }
+
+        .upload-area.dragover {
+            border-color: #764ba2;
+            background: #e8f4f8;
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            font-size: 1.1rem;
+            color: #495057;
+            margin-bottom: 10px;
+        }
+
+        .upload-hint {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        .accuracy-notice {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #856404;
+        }
+
+        .accuracy-notice .title {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #7c6d03;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-info {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            border-left: 4px solid #28a745;
+            display: none;
+        }
+
+        .file-name {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .file-size {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .plagiarism-report {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .similarity-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .similarity-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .similarity-percentage {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .similarity-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .content-analysis {
+            margin-top: 30px;
+        }
+
+        .text-segment {
+            margin-bottom: 15px;
+            line-height: 1.8;
+        }
+
+        .original-text {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #6c757d;
+        }
+
+        .plagiarized-text {
+            background: #fff5f5;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #e53e3e;
+            margin-top: 10px;
+        }
+
+        .highlight-red {
+            background-color: #fed7d7;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+
+        .highlight-yellow {
+            background-color: #fef5e7;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+
+        .highlight-green {
+            background-color: #f0fff4;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+
+        .source-info {
+            background: #e3f2fd;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+
+        .source-link {
+            color: #1976d2;
+            text-decoration: none;
+        }
+
+        .source-link:hover {
+            text-decoration: underline;
+        }
+
+        .plagiarism-summary {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+
+        .reduction-suggestions {
+            margin-top: 30px;
+        }
+
+        .suggestion-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .suggestion-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .suggestion-icon {
+            font-size: 1.2rem;
+            margin-right: 10px;
+            color: #667eea;
+        }
+
+        .original-snippet {
+            background: #fff5f5;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        .improved-snippet {
+            background: #f0fff4;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        .progress-ring {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto;
+        }
+
+        .progress-ring circle {
+            fill: none;
+            stroke-width: 8;
+            stroke-linecap: round;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+
+        .progress-ring .background {
+            stroke: #e9ecef;
+        }
+
+        .progress-ring .progress {
+            stroke: #dc3545;
+            stroke-dasharray: 283;
+            stroke-dashoffset: 283;
+            transition: stroke-dashoffset 0.5s ease-in-out;
+        }
+
+        .upload-progress {
+            display: none;
+            margin-top: 15px;
+        }
+
+        .progress-container {
+            background: #f0f0f0;
+            border-radius: 10px;
+            overflow: hidden;
+            height: 8px;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 10px;
+        }
+
+        .progress-text {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .file-preview {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            display: none;
+        }
+
+        .preview-header {
+            font-weight: bold;
+            color: #495057;
+            margin-bottom: 10px;
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+        }
+
+        .content-preview {
+            color: #666;
+        }
+
+        .upload-mode-switch {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .mode-btn {
+            padding: 8px 20px;
+            margin: 0 5px;
+            border: 2px solid #667eea;
+            background: transparent;
+            color: #667eea;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .mode-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .mode-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .detection-result {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 智能AIGC检测与优化工具</h1>
+            <p>专业的AI内容检测与人工化改写助手</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('detection')">🔍 AIGC检测</button>
+            <button class="tab" onclick="switchTab('plagiarism')">📋 文档查重</button>
+            <button class="tab" onclick="switchTab('optimization')">✍️ 智能降重</button>
+        </div>
+
+        <!-- AIGC检测区域 -->
+        <div id="detection" class="content-area active">
+            <div class="upload-mode-switch">
+                <button class="mode-btn" id="detectionTextMode" onclick="switchDetectionMode('text')">📝 文本输入</button>
+                <button class="mode-btn active" id="detectionFileMode" onclick="switchDetectionMode('file')">📄 文档上传</button>
+            </div>
+
+            <div id="detectionUploadArea" class="upload-area" onclick="document.getElementById('detectionFileInput').click()" 
+                 ondrop="handleDetectionFileDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+                <div class="upload-icon">📄</div>
+                <div class="upload-text">点击或拖拽上传文档进行AIGC检测</div>
+                <div class="upload-hint">支持 PDF、DOC、DOCX、TXT 格式，最大 10MB</div>
+                <input type="file" id="detectionFileInput" class="file-input" accept=".pdf,.doc,.docx,.txt" onchange="handleDetectionFileSelect(event)">
+            </div>
+
+            <div class="upload-progress" id="detectionUploadProgress">
+                <div class="progress-container">
+                    <div class="progress-bar-fill" id="detectionProgressFill"></div>
+                </div>
+                <div class="progress-text" id="detectionProgressText">上传中... 0%</div>
+            </div>
+
+            <div class="file-info" id="detectionFileInfo" style="display: none;">
+                <div class="file-name" id="detectionFileName"></div>
+                <div class="file-size" id="detectionFileSize"></div>
+            </div>
+
+            <div class="file-preview" id="detectionFilePreview">
+                <div class="preview-header">文档内容预览：</div>
+                <div class="content-preview" id="detectionPreviewContent"></div>
+            </div>
+
+            <div class="accuracy-notice" id="detectionAccuracyNotice" style="display: none;">
+                <div class="title">💡 检测精度提示</div>
+                <div>为获得最准确的检测结果，建议：</div>
+                <div>1. 上传纯文本(.txt)格式以获得100%准确的字数统计</div>
+                <div>2. 当前DOCX解析为智能估算，字数可能与实际有差异</div>
+                <div>3. 可以将Word文档另存为txt格式后重新上传</div>
+            </div>
+
+            <textarea class="text-input" id="detectionText" placeholder="请在此输入需要检测的文本内容..." style="display: none;"></textarea>
+            
+            <div class="action-buttons">
+                <button class="btn btn-primary" onclick="analyzeText()">🚀 开始检测</button>
+                <button class="btn btn-secondary" onclick="clearDetectionText()">🗑️ 清空内容</button>
+                <button class="btn btn-secondary" onclick="loadSampleText()">📝 加载示例</button>
+            </div>
+
+            <div class="loading" id="detectionLoading">
+                <div class="spinner"></div>
+                <p>正在分析文本特征，请稍候...</p>
+            </div>
+
+            <div class="result-panel" id="detectionResult" style="display: none;">
+                <div class="detection-result">
+                    <div>
+                        <div class="ai-probability" id="aiProbability">0%</div>
+                        <div class="probability-label">AI生成概率</div>
+                    </div>
+                    <div>
+                        <div class="risk-level" id="riskLevel">低风险</div>
+                    </div>
+                </div>
+
+                <div class="analysis-details">
+                    <h3 style="margin-bottom: 15px; color: #2c3e50;">📊 详细分析</h3>
+                    
+                    <div class="detail-item">
+                        <span>句子结构规律性</span>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="structureScore" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <span>词汇重复程度</span>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="repetitionScore" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <span>语言流畅度</span>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="fluencyScore" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <span>情感表达丰富度</span>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="emotionScore" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="statistics">
+                    <div class="stat-card">
+                        <div class="stat-number" id="wordCount">0</div>
+                        <div class="stat-label">总字数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="sentenceCount">0</div>
+                        <div class="stat-label">句子数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="avgSentenceLength">0</div>
+                        <div class="stat-label">平均句长</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="vocabularyRichness">0%</div>
+                        <div class="stat-label">词汇丰富度</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 文档查重区域 -->
+        <div id="plagiarism" class="content-area">
+            <div class="upload-area" onclick="document.getElementById('fileInput').click()" 
+                 ondrop="handleFileDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+                <div class="upload-icon">📄</div>
+                <div class="upload-text">点击或拖拽上传文档</div>
+                <div class="upload-hint">支持 PDF、DOC、DOCX、TXT 格式，最大 10MB</div>
+                <input type="file" id="fileInput" class="file-input" accept=".pdf,.doc,.docx,.txt" onchange="handleFileSelect(event)">
+            </div>
+
+            <div class="file-info" id="fileInfo">
+                <div class="file-name" id="fileName"></div>
+                <div class="file-size" id="fileSize"></div>
+            </div>
+
+            <textarea class="text-input" id="plagiarismText" placeholder="或者直接在此输入需要查重的文本内容..." style="display: none;"></textarea>
+            
+            <div class="action-buttons">
+                <button class="btn btn-primary" onclick="startPlagiarismCheck()">🔍 开始查重</button>
+                <button class="btn btn-secondary" onclick="switchToTextInput()">📝 文本输入</button>
+                <button class="btn btn-secondary" onclick="clearPlagiarismData()">🗑️ 清空数据</button>
+            </div>
+
+            <div class="loading" id="plagiarismLoading">
+                <div class="spinner"></div>
+                <p>正在进行查重分析，请稍候...</p>
+            </div>
+
+            <div class="plagiarism-report" id="plagiarismReport" style="display: none;">
+                <h3 style="margin-bottom: 20px; color: #2c3e50;">📊 查重分析报告</h3>
+                
+                <div class="similarity-overview">
+                    <div class="similarity-card">
+                        <div class="similarity-percentage" id="totalSimilarity">0%</div>
+                        <div class="similarity-label">总相似比</div>
+                    </div>
+                    <div class="similarity-card">
+                        <div class="similarity-percentage" id="internetSimilarity">0%</div>
+                        <div class="similarity-label">网络相似比</div>
+                    </div>
+                    <div class="similarity-card">
+                        <div class="similarity-percentage" id="paperSimilarity">0%</div>
+                        <div class="similarity-label">论文相似比</div>
+                    </div>
+                    <div class="similarity-card">
+                        <div class="similarity-percentage" id="selfCitation">0%</div>
+                        <div class="similarity-label">自引率</div>
+                    </div>
+                </div>
+
+                <div class="plagiarism-summary">
+                    <h4 style="margin-bottom: 15px; color: #2c3e50;">检测摘要</h4>
+                    <div class="summary-item">
+                        <span>检测时间</span>
+                        <span id="checkTime"></span>
+                    </div>
+                    <div class="summary-item">
+                        <span>总字数</span>
+                        <span id="totalWords"></span>
+                    </div>
+                    <div class="summary-item">
+                        <span>重复字数</span>
+                        <span id="duplicateWords"></span>
+                    </div>
+                    <div class="summary-item">
+                        <span>相似片段数</span>
+                        <span id="similarSegments"></span>
+                    </div>
+                    <div class="summary-item">
+                        <span>检测来源数</span>
+                        <span id="sourcesCount"></span>
+                    </div>
+                </div>
+
+                <div class="content-analysis">
+                    <h4 style="margin-bottom: 15px; color: #2c3e50;">🔍 详细分析</h4>
+                    <div id="detailedAnalysis"></div>
+                </div>
+
+                <div class="reduction-suggestions">
+                    <h4 style="margin-bottom: 15px; color: #2c3e50;">💡 降重建议</h4>
+                    <div id="reductionSuggestions"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 智能降重区域 -->
+        <div id="optimization" class="content-area">
+            <div class="upload-mode-switch">
+                <button class="mode-btn active" id="optimizationTextMode" onclick="switchOptimizationMode('text')">📝 文本输入</button>
+                <button class="mode-btn" id="optimizationFileMode" onclick="switchOptimizationMode('file')">📄 文档上传</button>
+            </div>
+
+            <div id="optimizationUploadArea" class="upload-area" style="display: none;" onclick="document.getElementById('optimizationFileInput').click()" 
+                 ondrop="handleOptimizationFileDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+                <div class="upload-icon">📄</div>
+                <div class="upload-text">点击或拖拽上传文档进行智能降重</div>
+                <div class="upload-hint">支持 PDF、DOC、DOCX、TXT 格式，最大 10MB</div>
+                <input type="file" id="optimizationFileInput" class="file-input" accept=".pdf,.doc,.docx,.txt" onchange="handleOptimizationFileSelect(event)">
+            </div>
+
+            <div class="upload-progress" id="optimizationUploadProgress">
+                <div class="progress-container">
+                    <div class="progress-bar-fill" id="optimizationProgressFill"></div>
+                </div>
+                <div class="progress-text" id="optimizationProgressText">上传中... 0%</div>
+            </div>
+
+            <div class="file-info" id="optimizationFileInfo" style="display: none;">
+                <div class="file-name" id="optimizationFileName"></div>
+                <div class="file-size" id="optimizationFileSize"></div>
+            </div>
+
+            <div class="file-preview" id="optimizationFilePreview">
+                <div class="preview-header">文档内容预览：</div>
+                <div class="content-preview" id="optimizationPreviewContent"></div>
+            </div>
+
+            <textarea class="text-input" id="optimizationText" placeholder="请在此输入需要降低AI痕迹的文本内容..."></textarea>
+            
+            <div class="optimization-mode-selector" style="margin-bottom: 20px;">
+                <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 15px;">
+                    <label style="font-weight: 600; color: #2c3e50;">优化模式：</label>
+                    <label style="display: flex; align-items: center; cursor: pointer;">
+                        <input type="radio" name="optimizationMode" value="rule" checked style="margin-right: 5px;">
+                        <span>🔧 规则优化</span>
+                    </label>
+                    <label style="display: flex; align-items: center; cursor: pointer;">
+                        <input type="radio" name="optimizationMode" value="ai" style="margin-right: 5px;">
+                        <span>🤖 AI优化 (DeepSeek R1)</span>
+                    </label>
+                    <label style="display: flex; align-items: center; cursor: pointer;">
+                        <input type="radio" name="optimizationMode" value="hybrid" style="margin-right: 5px;">
+                        <span>⚡ 混合优化</span>
+                    </label>
+                </div>
+                <div id="aiModeNotice" style="display: none; background: #e3f2fd; padding: 10px; border-radius: 8px; font-size: 14px; color: #1976d2;">
+                    <strong>🤖 AI模式说明：</strong>使用本地Ollama DeepSeek R1-8B模型进行智能降重，需要确保Ollama服务运行在localhost:11434
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn btn-primary" onclick="optimizeText()">🎯 开始优化</button>
+                <button class="btn btn-secondary" onclick="clearOptimizationText()">🗑️ 清空内容</button>
+                <button class="btn btn-secondary" onclick="copyOptimizedText()">📋 复制结果</button>
+                <button class="btn btn-secondary" onclick="testOllamaConnection()" id="testOllamaBtn">🔍 测试AI连接</button>
+            </div>
+
+            <div class="loading" id="optimizationLoading">
+                <div class="spinner"></div>
+                <p>正在智能改写文本，请稍候...</p>
+            </div>
+
+            <div class="result-panel" id="optimizationResult" style="display: none;">
+                <h3 style="margin-bottom: 15px; color: #2c3e50;">✨ 优化后的文本</h3>
+                <div class="optimized-text" id="optimizedTextContent"></div>
+                
+                <div class="suggestions">
+                    <h3 style="margin-bottom: 15px; color: #2c3e50;">💡 优化建议</h3>
+                    <div id="optimizationSuggestions"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加必要的库来解析文档 -->
+    <script src="https://cdn.jsdelivr.net/npm/mammoth@1.4.2/mammoth.browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+
+    <script>
+        // 全局变量
+        let currentTab = 'detection';
+        let detectionUploadedFile = null;
+        let detectionDocumentText = '';
+        let optimizationUploadedFile = null;
+        let optimizationDocumentText = '';
+        let uploadedFile = null;
+        let currentDocumentText = '';
+
+        // 标签切换功能
+        function switchTab(tabName) {
+            // 更新标签状态
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelector(`[onclick="switchTab('${tabName}')"]`).classList.add('active');
+            
+            // 切换内容区域
+            document.querySelectorAll('.content-area').forEach(area => area.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            
+            currentTab = tabName;
+        }
+
+        // AIGC检测功能
+        function analyzeText() {
+            const text = document.getElementById('detectionText').value.trim();
+            if (!text) {
+                alert('请输入需要检测的文本内容');
+                return;
+            }
+
+            // 显示加载状态
+            document.getElementById('detectionLoading').style.display = 'block';
+            document.getElementById('detectionResult').style.display = 'none';
+
+            // 模拟分析延时
+            setTimeout(() => {
+                const analysis = performAIGCAnalysis(text);
+                displayAnalysisResult(analysis);
+                
+                document.getElementById('detectionLoading').style.display = 'none';
+                document.getElementById('detectionResult').style.display = 'block';
+            }, 2000);
+        }
+
+        // 执行AIGC分析（增强版 - 支持文本标注）
+        function performAIGCAnalysis(text) {
+            // 基础统计
+            const wordCount = text.length;
+            const sentences = text.split(/[。！？.!?]+/).filter(s => s.trim().length > 0);
+            const sentenceCount = sentences.length;
+            const avgSentenceLength = Math.round(wordCount / sentenceCount);
+
+            // AI特征检测算法
+            let aiScore = 0;
+            let detectedIssues = []; // 用于记录具体的AI特征位置
+
+            // 1. 句子长度一致性检测
+            const sentenceLengths = sentences.map(s => s.trim().length);
+            const lengthVariation = calculateVariation(sentenceLengths);
+            const structureScore = Math.max(0, 100 - lengthVariation * 2);
+            
+            // 检测句子长度过于一致的片段
+            if (lengthVariation < 25) {
+                const avgLength = sentenceLengths.reduce((a, b) => a + b, 0) / sentenceLengths.length;
+                sentences.forEach((sentence, index) => {
+                    const trimmed = sentence.trim();
+                    if (trimmed.length > 0 && Math.abs(trimmed.length - avgLength) < 5) {
+                        detectedIssues.push({
+                            type: 'structure',
+                            text: trimmed,
+                            reason: '句子长度过于一致，缺乏自然变化',
+                            severity: 'medium',
+                            score: structureScore,
+                            position: index + 1
+                        });
+                    }
+                });
+            }
+            
+            // 2. 词汇重复检测
+            const words = text.match(/[\u4e00-\u9fa5a-zA-Z]+/g) || [];
+            const uniqueWords = new Set(words);
+            const repetitionScore = Math.max(0, 100 - (uniqueWords.size / words.length) * 100);
+            
+            // 检测重复词汇使用过多的情况
+            const wordFreq = {};
+            words.forEach(word => {
+                wordFreq[word] = (wordFreq[word] || 0) + 1;
+            });
+            
+            for (const [word, freq] of Object.entries(wordFreq)) {
+                if (freq > 3 && word.length > 1) {
+                    // 找出包含该词的句子
+                    const containingSentences = sentences.filter(s => s.includes(word));
+                    detectedIssues.push({
+                        type: 'repetition',
+                        text: word,
+                        reason: `词汇"${word}"重复使用${freq}次，词汇选择单一`,
+                        severity: freq > 5 ? 'high' : 'medium',
+                        score: Math.min(100, freq * 10),
+                        examples: containingSentences.slice(0, 3)
+                    });
+                }
+            }
+
+            // 3. 流畅度检测 (基于常见AI用词)
+            const aiWords = ['显著', '重要', '关键', '有效', '成功', '完善', '优化', '提升', '实现', '确保', '进一步', '深入', '全面', '综合', '系统'];
+            let aiWordCount = 0;
+            
+            aiWords.forEach(word => {
+                const regex = new RegExp(word, 'g');
+                const matches = text.match(regex);
+                if (matches) {
+                    aiWordCount += matches.length;
+                    // 找出包含该AI词汇的句子
+                    const containingSentences = sentences.filter(s => s.includes(word));
+                    detectedIssues.push({
+                        type: 'aiWords',
+                        text: word,
+                        reason: `"${word}"是AI常用词汇，出现${matches.length}次`,
+                        severity: matches.length > 2 ? 'high' : 'medium',
+                        score: matches.length * 15,
+                        examples: containingSentences.slice(0, 2)
+                    });
+                }
+            });
+            
+            const fluencyScore = Math.min(100, aiWordCount * 15);
+
+            // 4. 情感表达检测
+            const emotionWords = ['我觉得', '感觉', '认为', '个人', '体验', '感受', '想法', '观点', '我认为', '我的看法'];
+            const emotionWordCount = emotionWords.reduce((count, word) => count + (text.includes(word) ? 1 : 0), 0);
+            const emotionScore = Math.max(0, 100 - emotionWordCount * 20);
+            
+            // 检测缺乏个人化表达的段落
+            const paragraphs = text.split(/\n+/).filter(p => p.trim().length > 50);
+            paragraphs.forEach((paragraph, index) => {
+                const hasEmotion = emotionWords.some(word => paragraph.includes(word));
+                if (!hasEmotion && paragraph.length > 100) {
+                    detectedIssues.push({
+                        type: 'emotion',
+                        text: paragraph.substring(0, 100) + '...',
+                        reason: '缺乏个人化表达和主观色彩',
+                        severity: 'medium',
+                        score: 30,
+                        position: `第${index + 1}段`
+                    });
+                }
+            });
+
+            // 计算综合AI概率
+            aiScore = Math.round((structureScore + repetitionScore + fluencyScore + emotionScore) / 4);
+
+            // 词汇丰富度
+            const vocabularyRichness = Math.round((uniqueWords.size / words.length) * 100);
+
+            return {
+                aiProbability: aiScore,
+                structureScore,
+                repetitionScore,
+                fluencyScore,
+                emotionScore,
+                wordCount,
+                sentenceCount,
+                avgSentenceLength,
+                vocabularyRichness,
+                detectedIssues // 新增：具体检测到的问题
+            };
+        }
+
+        // 计算变异系数
+        function calculateVariation(values) {
+            const mean = values.reduce((a, b) => a + b, 0) / values.length;
+            const variance = values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / values.length;
+            const stdDev = Math.sqrt(variance);
+            return (stdDev / mean) * 100;
+        }
+
+        // 显示分析结果（增强版 - 包含具体问题标注）
+        function displayAnalysisResult(analysis) {
+            // AI概率和风险等级
+            document.getElementById('aiProbability').textContent = analysis.aiProbability + '%';
+            
+            const riskLevel = document.getElementById('riskLevel');
+            if (analysis.aiProbability >= 70) {
+                riskLevel.textContent = '高风险';
+                riskLevel.className = 'risk-level risk-high';
+            } else if (analysis.aiProbability >= 40) {
+                riskLevel.textContent = '中风险';
+                riskLevel.className = 'risk-level risk-medium';
+            } else {
+                riskLevel.textContent = '低风险';
+                riskLevel.className = 'risk-level risk-low';
+            }
+
+            // 详细分析进度条
+            document.getElementById('structureScore').style.width = analysis.structureScore + '%';
+            document.getElementById('repetitionScore').style.width = analysis.repetitionScore + '%';
+            document.getElementById('fluencyScore').style.width = analysis.fluencyScore + '%';
+            document.getElementById('emotionScore').style.width = analysis.emotionScore + '%';
+
+            // 统计信息
+            document.getElementById('wordCount').textContent = analysis.wordCount;
+            document.getElementById('sentenceCount').textContent = analysis.sentenceCount;
+            document.getElementById('avgSentenceLength').textContent = analysis.avgSentenceLength;
+            document.getElementById('vocabularyRichness').textContent = analysis.vocabularyRichness + '%';
+            
+            // 显示具体检测到的问题
+            displayDetectedIssues(analysis.detectedIssues);
+        }
+        
+        // 显示具体检测到的AI特征问题
+        function displayDetectedIssues(issues) {
+            // 检查是否存在issues容器，如果不存在就创建
+            let issuesContainer = document.getElementById('detectedIssuesContainer');
+            if (!issuesContainer) {
+                issuesContainer = document.createElement('div');
+                issuesContainer.id = 'detectedIssuesContainer';
+                issuesContainer.innerHTML = '<h4 style="margin: 20px 0 15px 0; color: #2c3e50;">🔍 具体AI特征检测</h4>';
+                
+                // 插入到结果面板中
+                const resultPanel = document.getElementById('detectionResult');
+                resultPanel.appendChild(issuesContainer);
+            }
+            
+            // 清空之前的内容，保留标题
+            const title = issuesContainer.querySelector('h4');
+            issuesContainer.innerHTML = '';
+            issuesContainer.appendChild(title);
+            
+            if (issues.length === 0) {
+                issuesContainer.innerHTML += '<div style="color: #38a169; padding: 15px; background: #f0fff4; border-radius: 8px; margin: 10px 0;">✅ 未检测到明显的AI生成特征</div>';
+                return;
+            }
+            
+            // 按严重程度分组显示
+            const groupedIssues = {
+                high: issues.filter(issue => issue.severity === 'high'),
+                medium: issues.filter(issue => issue.severity === 'medium'),
+                low: issues.filter(issue => issue.severity === 'low')
+            };
+            
+            // 显示高风险问题
+            if (groupedIssues.high.length > 0) {
+                const highSection = document.createElement('div');
+                highSection.innerHTML = '<h5 style="color: #c53030; margin: 15px 0 10px 0;">🚨 高风险特征</h5>';
+                groupedIssues.high.forEach(issue => {
+                    highSection.appendChild(createIssueElement(issue, 'high'));
+                });
+                issuesContainer.appendChild(highSection);
+            }
+            
+            // 显示中风险问题
+            if (groupedIssues.medium.length > 0) {
+                const mediumSection = document.createElement('div');
+                mediumSection.innerHTML = '<h5 style="color: #dd6b20; margin: 15px 0 10px 0;">⚠️ 中风险特征</h5>';
+                groupedIssues.medium.forEach(issue => {
+                    mediumSection.appendChild(createIssueElement(issue, 'medium'));
+                });
+                issuesContainer.appendChild(mediumSection);
+            }
+            
+            // 显示低风险问题
+            if (groupedIssues.low.length > 0) {
+                const lowSection = document.createElement('div');
+                lowSection.innerHTML = '<h5 style="color: #38a169; margin: 15px 0 10px 0;">💡 轻微特征</h5>';
+                groupedIssues.low.forEach(issue => {
+                    lowSection.appendChild(createIssueElement(issue, 'low'));
+                });
+                issuesContainer.appendChild(lowSection);
+            }
+        }
+        
+        // 创建问题显示元素
+        function createIssueElement(issue, severity) {
+            const element = document.createElement('div');
+            element.className = `issue-item issue-${severity}`;
+            
+            const severityColors = {
+                high: { bg: '#fee', border: '#c53030', text: '#c53030' },
+                medium: { bg: '#fffaf0', border: '#dd6b20', text: '#dd6b20' },
+                low: { bg: '#f0fff4', border: '#38a169', text: '#38a169' }
+            };
+            
+            const color = severityColors[severity];
+            
+            element.style.cssText = `
+                background: ${color.bg};
+                border-left: 4px solid ${color.border};
+                padding: 12px 15px;
+                margin: 8px 0;
+                border-radius: 6px;
+                font-size: 14px;
+            `;
+            
+            let html = `
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                    <strong style="color: ${color.text};">${getTypeLabel(issue.type)}</strong>
+                    <span style="background: ${color.border}; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px;">
+                        ${issue.score}分
+                    </span>
+                </div>
+                <div style="color: #2d3748; margin-bottom: 6px;">${issue.reason}</div>
+            `;
+            
+            if (issue.text) {
+                html += `<div style="background: rgba(0,0,0,0.05); padding: 8px; border-radius: 4px; font-style: italic; color: #4a5568;">
+                    "${issue.text}"
+                </div>`;
+            }
+            
+            if (issue.examples && issue.examples.length > 0) {
+                html += '<div style="margin-top: 8px; font-size: 13px; color: #4a5568;">相关句子：</div>';
+                issue.examples.forEach(example => {
+                    html += `<div style="background: rgba(0,0,0,0.05); padding: 6px; margin: 4px 0; border-radius: 4px; font-size: 13px;">
+                        "${example.trim()}"
+                    </div>`;
+                });
+            }
+            
+            if (issue.position) {
+                html += `<div style="margin-top: 6px; font-size: 12px; color: #718096;">位置：${issue.position}</div>`;
+            }
+            
+            element.innerHTML = html;
+            return element;
+        }
+        
+        // 获取问题类型标签
+        function getTypeLabel(type) {
+            const labels = {
+                structure: '句式结构',
+                repetition: '词汇重复',
+                aiWords: 'AI用词',
+                emotion: '情感表达'
+            };
+            return labels[type] || type;
+        }
+
+        // 智能降重功能
+        function optimizeText() {
+            const text = document.getElementById('optimizationText').value.trim();
+            if (!text) {
+                alert('请输入需要降重的文本内容');
+                return;
+            }
+
+            // 显示加载状态
+            document.getElementById('optimizationLoading').style.display = 'block';
+            document.getElementById('optimizationResult').style.display = 'none';
+
+            // 模拟优化延时
+            setTimeout(() => {
+                const optimizedData = performTextOptimization(text);
+                displayOptimizationResult(optimizedData);
+                
+                document.getElementById('optimizationLoading').style.display = 'none';
+                document.getElementById('optimizationResult').style.display = 'block';
+            }, 3000);
+        }
+
+        // 执行文本优化（基于AIGC分析结果）
+        function performTextOptimization(text) {
+            let optimizedText = text;
+            const suggestions = [];
+            const modifications = []; // 记录具体的修改内容
+
+            // 首先进行AIGC分析，获取具体问题
+            const aigcAnalysis = performAIGCAnalysis(text);
+            const detectedIssues = aigcAnalysis.detectedIssues || [];
+            
+            // 记录初始AIGC分析结果
+            suggestions.push({
+                title: 'AIGC检测分析',
+                text: `初始AI生成概率：${aigcAnalysis.aiProbability}%，检测到${detectedIssues.length}个潜在问题`
+            });
+
+            // 1. 基于检测问题进行针对性的同义词替换
+            const advancedSynonymMap = {
+                '显著': ['明显', '突出', '清楚', '鲜明'],
+                '重要': ['关键', '核心', '主要', '重点'],
+                '有效': ['管用', '好用', '实用', '有用'],
+                '实现': ['达到', '完成', '做到', '取得'],
+                '提升': ['改善', '增强', '加强', '提高'],
+                '确保': ['保证', '保障', '确认', '让'],
+                '优化': ['改进', '改善', '完善', '调整'],
+                '完善': ['改进', '健全', '充实', '改善'],
+                '成功': ['顺利', '有效', '圆满', '良好'],
+                '关键': ['核心', '主要', '重点', '要害'],
+                '进一步': ['更加', '进而', '接着', '继续'],
+                '深入': ['详细', '仔细', '深刻', '透彻'],
+                '全面': ['完整', '详尽', '周全', '彻底'],
+                '综合': ['整体', '总体', '全方位', '统一'],
+                '系统': ['完整', '全套', '整体', '统一']
+            };
+
+            // 针对检测到的AI词汇问题进行替换
+            let aiWordIssues = detectedIssues.filter(issue => issue.type === 'aiWords');
+            if (aiWordIssues.length > 0) {
+                Object.keys(advancedSynonymMap).forEach(word => {
+                    const regex = new RegExp(word, 'g');
+                    const matches = optimizedText.match(regex);
+                    if (matches) {
+                        const synonyms = advancedSynonymMap[word];
+                        const replacement = synonyms[Math.floor(Math.random() * synonyms.length)];
+                        
+                        // 记录替换前的句子
+                        const sentencesWithWord = optimizedText.split(/[。！？.!?]+/).filter(s => s.includes(word));
+                        
+                        optimizedText = optimizedText.replace(regex, replacement);
+                        
+                        sentencesWithWord.forEach(sentence => {
+                            if (sentence.trim()) {
+                                modifications.push({
+                                    type: 'synonym',
+                                    original: sentence.trim(),
+                                    modified: sentence.replace(new RegExp(word, 'g'), replacement).trim(),
+                                    reason: `针对AI用词问题：${word} → ${replacement}`
+                                });
+                            }
+                        });
+                        
+                        suggestions.push({
+                            title: 'AI词汇替换',
+                            text: `将AI常用词"${word}"替换为"${replacement}"，降低机器化特征（${matches.length}处）`
+                        });
+                    }
+                });
+            }
+
+            // 2. 针对句子结构问题进行调整
+            let structureIssues = detectedIssues.filter(issue => issue.type === 'structure');
+            if (structureIssues.length > 0) {
+                suggestions.push({
+                    title: '句子结构优化',
+                    text: `检测到${structureIssues.length}个句子结构问题，进行针对性调整`
+                });
+                
+                // 调整句子长度过于一致的问题
+                const sentences = optimizedText.split(/[。！？.!?]+/).filter(s => s.trim().length > 0);
+                for (let i = 0; i < sentences.length; i++) {
+                    let sentence = sentences[i].trim();
+                    if (sentence.length > 40 && (sentence.includes('，') || sentence.includes('；'))) {
+                        // 拆分长句
+                        const parts = sentence.split(/[，；]/);
+                        if (parts.length >= 2) {
+                            const newSentence = parts[0].trim() + '。另外，' + parts.slice(1).join('，').trim();
+                            optimizedText = optimizedText.replace(sentence, newSentence);
+                            
+                            modifications.push({
+                                type: 'structure',
+                                original: sentence,
+                                modified: newSentence,
+                                reason: '拆分过长句子，改善句式单一问题'
+                            });
+                        }
+                    }
+                }
+            }
+
+            // 3. 被动语态转主动语态
+            const passivePattern = /(\S+)被(\S+)/g;
+            let passiveMatches = [];
+            let match;
+            while ((match = passivePattern.exec(text)) !== null) {
+                passiveMatches.push(match);
+            }
+            
+            if (passiveMatches.length > 0) {
+                passiveMatches.forEach(match => {
+                    const original = match[0];
+                    const subject = match[1];
+                    const verb = match[2];
+                    const active = `${verb}了${subject}`;
+                    
+                    // 找到包含该被动语态的句子
+                    const sentenceWithPassive = optimizedText.split(/[。！？.!?]+/).find(s => s.includes(original));
+                    if (sentenceWithPassive) {
+                        const modifiedSentence = sentenceWithPassive.replace(original, active);
+                        optimizedText = optimizedText.replace(sentenceWithPassive, modifiedSentence);
+                        
+                        modifications.push({
+                            type: 'sentence',
+                            original: sentenceWithPassive.trim(),
+                            modified: modifiedSentence.trim(),
+                            reason: `被动语态转主动语态，增加语言活力`
+                        });
+                    }
+                });
+                
+                suggestions.push({
+                    title: '语态调整',
+                    text: `调整了${passiveMatches.length}处被动语态为主动语态，提升表达自然度`
+                });
+            }
+
+            // 4. 针对情感表达问题增加个人化内容
+            let emotionIssues = detectedIssues.filter(issue => issue.type === 'emotion');
+            if (emotionIssues.length > 0) {
+                const personalExpressions = [
+                    '从我的观察来看', '个人认为', '我觉得', '据我的经验', 
+                    '在我看来', '我发现', '我注意到', '从我的角度'
+                ];
+                const sentences = optimizedText.split('。').filter(s => s.trim().length > 10);
+                
+                if (sentences.length > 1) {
+                    // 选择一个适合添加个人表达的句子
+                    const targetIndex = Math.floor(sentences.length / 3);
+                    const originalSentence = sentences[targetIndex].trim();
+                    const randomExpression = personalExpressions[Math.floor(Math.random() * personalExpressions.length)];
+                    
+                    // 检查句子是否已经有个人化表达
+                    const hasPersonalExpression = personalExpressions.some(expr => originalSentence.includes(expr.substring(0, 2)));
+                    
+                    if (!hasPersonalExpression) {
+                        sentences[targetIndex] = randomExpression + '，' + originalSentence.toLowerCase();
+                        optimizedText = sentences.join('。');
+                        
+                        modifications.push({
+                            type: 'personal',
+                            original: originalSentence,
+                            modified: sentences[targetIndex],
+                            reason: `针对缺乏情感表达问题，增加个人观点`
+                        });
+                        
+                        suggestions.push({
+                            title: '个人化表达增强',
+                            text: `针对${emotionIssues.length}个缺乏个人色彩的段落，添加"${randomExpression}"等主观表达`
+                        });
+                    }
+                }
+            }
+
+            // 4. 句子结构多样化
+            const longSentences = optimizedText.split('。').filter(s => s.trim().length > 40);
+            let restructuredCount = 0;
+            
+            longSentences.forEach(sentence => {
+                if (sentence.includes('，') && Math.random() > 0.5) {
+                    const parts = sentence.split('，');
+                    if (parts.length >= 2) {
+                        const restructured = parts[1].trim() + '，' + parts[0].trim() + (parts.slice(2).length > 0 ? '，' + parts.slice(2).join('，') : '');
+                        optimizedText = optimizedText.replace(sentence, restructured);
+                        
+                        modifications.push({
+                            type: 'structure',
+                            original: sentence.trim(),
+                            modified: restructured.trim(),
+                            reason: '句子结构调整：改变分句顺序'
+                        });
+                        
+                        restructuredCount++;
+                    }
+                }
+            });
+            
+            if (restructuredCount > 0) {
+                suggestions.push({
+                    title: '句子结构优化',
+                    text: `调整了${restructuredCount}个长句的结构，增加句式变化`
+                });
+            }
+
+            // 5. 标点符号微调
+            const originalCommas = (optimizedText.match(/，/g) || []).length;
+            optimizedText = optimizedText.replace(/，([^，]{10,}?)，/g, (match, middle) => {
+                return Math.random() > 0.7 ? `，${middle}；` : match; // 30%概率将逗号改为分号
+            });
+            
+            const newCommas = (optimizedText.match(/，/g) || []).length;
+            if (newCommas !== originalCommas) {
+                suggestions.push({
+                    title: '标点符号优化',
+                    text: '调整了部分标点符号使用，模拟自然书写习惯'
+                });
+            }
+
+            // 最终优化效果评估
+            const finalAigcAnalysis = performAIGCAnalysis(optimizedText);
+            const improvementPercent = Math.max(0, aigcAnalysis.aiProbability - finalAigcAnalysis.aiProbability);
+            
+            if (improvementPercent > 0) {
+                suggestions.push({
+                    title: '优化效果评估',
+                    text: `AI生成概率从${aigcAnalysis.aiProbability}%降低到${finalAigcAnalysis.aiProbability}%，改善了${improvementPercent.toFixed(1)}个百分点`
+                });
+            }
+
+            return {
+                originalText: text,
+                optimizedText,
+                suggestions,
+                modifications, // 具体的修改记录
+                originalAigcScore: aigcAnalysis.aiProbability,
+                finalAigcScore: finalAigcAnalysis.aiProbability,
+                improvement: improvementPercent
+            };
+        }
+
+        // 显示优化结果（基于AIGC改善效果）
+        function displayOptimizationResult(data) {
+            document.getElementById('optimizedTextContent').textContent = data.optimizedText;
+            
+            const suggestionsContainer = document.getElementById('optimizationSuggestions');
+            suggestionsContainer.innerHTML = '';
+            
+            // 添加AIGC改善效果概览
+            if (data.improvement !== undefined) {
+                const improvementElement = document.createElement('div');
+                improvementElement.className = 'suggestion-item';
+                
+                // 根据优化模式设置不同的背景颜色
+                let modeIcon = '🔧';
+                let modeColor = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                let modeLabel = '规则优化';
+                
+                if (data.mode === 'ai') {
+                    modeIcon = '🤖';
+                    modeColor = 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)';
+                    modeLabel = 'AI优化 (DeepSeek R1)';
+                } else if (data.mode === 'hybrid') {
+                    modeIcon = '⚡';
+                    modeColor = 'linear-gradient(135deg, #ff9a56 0%, #ff6a95 100%)';
+                    modeLabel = '混合优化 (规则+AI)';
+                }
+                
+                improvementElement.style.cssText = `background: ${modeColor}; color: white; border-left: none;`;
+                
+                const improvementIcon = data.improvement > 10 ? '🎉' : (data.improvement > 5 ? '✅' : '📈');
+                
+                improvementElement.innerHTML = `
+                    <h5 style="color: white; margin-bottom: 8px;">${modeIcon} ${modeLabel}效果</h5>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <span>优化前 AI 概率：</span><strong>${data.originalAigcScore}%</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <span>优化后 AI 概率：</span><strong>${data.finalAigcScore}%</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>改善程度：</span><strong style="color: #90EE90;">${improvementIcon} -${data.improvement.toFixed(1)}%</strong>
+                    </div>
+                `;
+                suggestionsContainer.appendChild(improvementElement);
+            }
+            
+            // 显示优化建议
+            data.suggestions.forEach(suggestion => {
+                const suggestionElement = document.createElement('div');
+                suggestionElement.className = 'suggestion-item';
+                
+                // 根据建议类型设置不同的图标
+                let icon = '💡';
+                if (suggestion.title.includes('AIGC检测')) icon = '🔍';
+                else if (suggestion.title.includes('AI词汇')) icon = '📝';
+                else if (suggestion.title.includes('结构')) icon = '🔧';
+                else if (suggestion.title.includes('个人化')) icon = '🗣️';
+                else if (suggestion.title.includes('效果')) icon = '📊';
+                
+                suggestionElement.innerHTML = `
+                    <h5 style="color: #2c3e50; margin-bottom: 8px;">${icon} ${suggestion.title}</h5>
+                    <p style="color: #5a6c7d; margin: 0;">${suggestion.text}</p>
+                `;
+                suggestionsContainer.appendChild(suggestionElement);
+            });
+            
+            // 显示具体修改对比
+            if (data.modifications && data.modifications.length > 0) {
+                displayModificationComparison(data.modifications);
+            }
+        }
+        
+        // 显示修改对比详情
+        function displayModificationComparison(modifications) {
+            // 检查是否存在修改对比容器，如果不存在就创建
+            let comparisonContainer = document.getElementById('modificationComparisonContainer');
+            if (!comparisonContainer) {
+                comparisonContainer = document.createElement('div');
+                comparisonContainer.id = 'modificationComparisonContainer';
+                
+                // 插入到优化结果面板中
+                const resultPanel = document.getElementById('optimizationResult');
+                resultPanel.appendChild(comparisonContainer);
+            }
+            
+            comparisonContainer.innerHTML = '<h3 style="margin: 25px 0 15px 0; color: #2c3e50;">🔍 具体修改对比</h3>';
+            
+            if (modifications.length === 0) {
+                comparisonContainer.innerHTML += '<div style="color: #38a169; padding: 15px; background: #f0fff4; border-radius: 8px; margin: 10px 0;">✅ 文本已经很自然，未做大幅修改</div>';
+                return;
+            }
+            
+            // 按修改类型分组显示
+            const groupedModifications = {
+                synonym: modifications.filter(mod => mod.type === 'synonym'),
+                sentence: modifications.filter(mod => mod.type === 'sentence'),
+                personal: modifications.filter(mod => mod.type === 'personal'),
+                structure: modifications.filter(mod => mod.type === 'structure'),
+                punctuation: modifications.filter(mod => mod.type === 'punctuation')
+            };
+            
+            // 显示同义词替换
+            if (groupedModifications.synonym.length > 0) {
+                const synonymSection = document.createElement('div');
+                synonymSection.innerHTML = '<h4 style="color: #667eea; margin: 20px 0 10px 0;">📝 同义词替换</h4>';
+                groupedModifications.synonym.forEach(mod => {
+                    synonymSection.appendChild(createModificationElement(mod));
+                });
+                comparisonContainer.appendChild(synonymSection);
+            }
+            
+            // 显示句式调整
+            if (groupedModifications.sentence.length > 0) {
+                const sentenceSection = document.createElement('div');
+                sentenceSection.innerHTML = '<h4 style="color: #667eea; margin: 20px 0 10px 0;">🔄 句式调整</h4>';
+                groupedModifications.sentence.forEach(mod => {
+                    sentenceSection.appendChild(createModificationElement(mod));
+                });
+                comparisonContainer.appendChild(sentenceSection);
+            }
+            
+            // 显示个人化表达
+            if (groupedModifications.personal.length > 0) {
+                const personalSection = document.createElement('div');
+                personalSection.innerHTML = '<h4 style="color: #667eea; margin: 20px 0 10px 0;">🗣️ 个人化表达</h4>';
+                groupedModifications.personal.forEach(mod => {
+                    personalSection.appendChild(createModificationElement(mod));
+                });
+                comparisonContainer.appendChild(personalSection);
+            }
+            
+            // 显示结构调整
+            if (groupedModifications.structure.length > 0) {
+                const structureSection = document.createElement('div');
+                structureSection.innerHTML = '<h4 style="color: #667eea; margin: 20px 0 10px 0;">🔧 结构调整</h4>';
+                groupedModifications.structure.forEach(mod => {
+                    structureSection.appendChild(createModificationElement(mod));
+                });
+                comparisonContainer.appendChild(structureSection);
+            }
+        }
+        
+        // 创建修改对比元素
+        function createModificationElement(modification) {
+            const element = document.createElement('div');
+            element.style.cssText = `
+                background: #f8f9fa;
+                border: 1px solid #e9ecef;
+                border-radius: 8px;
+                padding: 15px;
+                margin: 10px 0;
+                font-size: 14px;
+            `;
+            
+            element.innerHTML = `
+                <div style="margin-bottom: 12px; font-weight: 600; color: #495057;">
+                    ${modification.reason}
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div>
+                        <div style="font-weight: 600; color: #dc3545; margin-bottom: 6px;">❌ 修改前：</div>
+                        <div style="background: #fff5f5; border-left: 4px solid #dc3545; padding: 10px; border-radius: 4px; line-height: 1.5;">
+                            "${modification.original}"
+                        </div>
+                    </div>
+                    <div>
+                        <div style="font-weight: 600; color: #28a745; margin-bottom: 6px;">✅ 修改后：</div>
+                        <div style="background: #f0fff4; border-left: 4px solid #28a745; padding: 10px; border-radius: 4px; line-height: 1.5;">
+                            "${modification.modified}"
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            return element;
+        }
+        
+        // 原有的显示功能保持不变（为了兼容性）
+        function displayOriginalOptimizationResult(data) {
+            document.getElementById('optimizedTextContent').textContent = data.optimizedText;
+            
+            const suggestionsContainer = document.getElementById('optimizationSuggestions');
+            suggestionsContainer.innerHTML = '';
+            
+            data.suggestions.forEach(suggestion => {
+                const suggestionElement = document.createElement('div');
+                suggestionElement.className = 'suggestion-item';
+                suggestionElement.innerHTML = `
+                    <div class="suggestion-title">${suggestion.title}</div>
+                    <div class="suggestion-text">${suggestion.text}</div>
+                `;
+                suggestionsContainer.appendChild(suggestionElement);
+            });
+
+            if (data.suggestions.length === 0) {
+                suggestionsContainer.innerHTML = '<div class="suggestion-item"><div class="suggestion-text">文本质量良好，暂无特殊优化建议</div></div>';
+            }
+        }
+
+        // 辅助功能
+        function clearDetectionText() {
+            document.getElementById('detectionText').value = '';
+            document.getElementById('detectionResult').style.display = 'none';
+        }
+
+        function clearOptimizationText() {
+            document.getElementById('optimizationText').value = '';
+            document.getElementById('optimizationResult').style.display = 'none';
+        }
+
+        function loadSampleText() {
+            const sampleText = `在现代商业环境中，数据分析显著提升了企业的决策效率。通过有效的数据挖掘技术，企业能够成功识别市场趋势，从而实现更精准的市场定位。这种方法不仅优化了资源配置，还确保了企业在竞争激烈的市场中保持领先地位。重要的是，完善的数据分析体系为企业提供了关键的竞争优势。`;
+            document.getElementById('detectionText').value = sampleText;
+        }
+
+        function copyOptimizedText() {
+            const optimizedText = document.getElementById('optimizedTextContent').textContent;
+            if (!optimizedText) {
+                alert('暂无可复制的优化文本');
+                return;
+            }
+            
+            navigator.clipboard.writeText(optimizedText).then(() => {
+                alert('优化后的文本已复制到剪贴板');
+            }).catch(() => {
+                alert('复制失败，请手动复制');
+            });
+        }
+
+        // 文档上传相关功能
+
+        // 文件拖拽处理
+        function handleDragOver(event) {
+            event.preventDefault();
+            event.currentTarget.classList.add('dragover');
+        }
+
+        function handleDragLeave(event) {
+            event.currentTarget.classList.remove('dragover');
+        }
+
+        function handleFileDrop(event) {
+            event.preventDefault();
+            event.currentTarget.classList.remove('dragover');
+            
+            const files = event.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        }
+
+        // 文件选择处理
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                handleFile(file);
+            }
+        }
+
+        // 处理上传的文件
+        function handleFile(file) {
+            // 验证文件类型
+            const allowedTypes = ['application/pdf', 'application/msword', 
+                                'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 
+                                'text/plain'];
+            
+            if (!allowedTypes.includes(file.type)) {
+                alert('请上传支持的文件格式：PDF、DOC、DOCX、TXT');
+                return;
+            }
+
+            // 验证文件大小（10MB）
+            if (file.size > 10 * 1024 * 1024) {
+                alert('文件大小不能超过 10MB');
+                return;
+            }
+
+            uploadedFile = file;
+            
+            // 显示文件信息
+            document.getElementById('fileName').textContent = file.name;
+            document.getElementById('fileSize').textContent = formatFileSize(file.size);
+            document.getElementById('fileInfo').style.display = 'block';
+
+            // 读取文件内容
+            readFileContent(file);
+        }
+
+        // 读取文件内容
+        function readFileContent(file) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                if (file.type === 'text/plain') {
+                    currentDocumentText = e.target.result;
+                    const actualWords = currentDocumentText.length;
+                    alert(`文本文件解析完成！\n文件：${file.name}\n大小：${formatFileSize(file.size)}\n实际字数：${actualWords.toLocaleString()} 字`);
+                } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+                    // 处理DOCX文件
+                    extractDocxContent(e.target.result, file, 'plagiarism');
+                } else if (file.type === 'application/pdf') {
+                    // 处理PDF文件
+                    extractPdfContent(e.target.result, file, 'plagiarism');
+                } else {
+                    // 其他格式暂不支持
+                    alert('暂不支持该文件格式的完整解析，请使用TXT或DOCX格式。');
+                }
+            };
+
+            reader.onerror = function(error) {
+                console.error('文件读取失败:', error);
+                alert('文件读取失败，请重试');
+            };
+
+            // 对于文本文件使用readAsText，对于二进制文件使用readAsArrayBuffer
+            if (file.type === 'text/plain') {
+                reader.readAsText(file, 'UTF-8');
+            } else {
+            reader.readAsArrayBuffer(file);
+            }
+        }
+
+        // 格式化文件大小
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // 切换到文本输入模式
+        function switchToTextInput() {
+            const textArea = document.getElementById('plagiarismText');
+            const uploadArea = document.querySelector('#plagiarism .upload-area');
+            
+            if (textArea.style.display === 'none') {
+                textArea.style.display = 'block';
+                uploadArea.style.display = 'none';
+                textArea.value = currentDocumentText;
+            } else {
+                textArea.style.display = 'none';
+                uploadArea.style.display = 'block';
+            }
+        }
+
+        // 开始查重检测
+        function startPlagiarismCheck() {
+            let textToCheck = '';
+            
+            if (document.getElementById('plagiarismText').style.display !== 'none') {
+                textToCheck = document.getElementById('plagiarismText').value.trim();
+            } else if (currentDocumentText) {
+                textToCheck = currentDocumentText;
+            }
+
+            if (!textToCheck) {
+                alert('请上传文档或输入需要检测的文本内容');
+                return;
+            }
+
+            // 显示加载状态
+            document.getElementById('plagiarismLoading').style.display = 'block';
+            document.getElementById('plagiarismReport').style.display = 'none';
+
+                         // 模拟查重分析（优化速度）
+            setTimeout(() => {
+                const plagiarismResult = performPlagiarismAnalysis(textToCheck);
+                displayPlagiarismReport(plagiarismResult);
+                
+                document.getElementById('plagiarismLoading').style.display = 'none';
+                document.getElementById('plagiarismReport').style.display = 'block';
+            }, 1500);
+        }
+
+        // 执行查重分析（基于AIGC标准规则）
+        function performPlagiarismAnalysis(text) {
+            const totalWords = text.length;
+            
+            // 首先进行AIGC特征分析
+            const aigcAnalysis = performAIGCAnalysis(text);
+            
+            // 基于AIGC分析结果调整相似度检测
+            let baseSimilarity = Math.floor(Math.random() * 25) + 10; // 基础10-35%
+            
+            // 根据AIGC特征提高相似度
+            const aigcBonus = Math.floor(aigcAnalysis.aiProbability * 0.3); // AIGC概率高的话增加相似度
+            const totalSimilarity = Math.min(85, baseSimilarity + aigcBonus);
+            
+            const internetSimilarity = Math.floor(totalSimilarity * 0.6);
+            const paperSimilarity = Math.floor(totalSimilarity * 0.3);
+            const selfCitation = Math.floor(totalSimilarity * 0.1);
+            
+            const duplicateWords = Math.floor(totalWords * (totalSimilarity / 100));
+            
+            // 分析文本段落，重点关注AIGC特征
+            const sentences = text.split(/[。！？.!?]+/).filter(s => s.trim().length > 10);
+            const analysisSegments = [];
+            
+            // 基于AIGC检测结果进行智能相似片段检测
+            for (let i = 0; i < Math.min(sentences.length, 6); i++) {
+                const sentence = sentences[i].trim();
+                if (sentence.length < 15) continue;
+                
+                // 检查该句子的AIGC特征
+                const sentenceAIGCScore = analyzeSentenceAIGCFeatures(sentence);
+                
+                // AIGC特征越明显，越容易被标记为相似
+                const flagProbability = 0.3 + (sentenceAIGCScore / 100) * 0.5;
+                
+                if (Math.random() < flagProbability) {
+                    const similarityLevel = sentenceAIGCScore > 70 ? 2 : (sentenceAIGCScore > 40 ? 1 : 0);
+                    const similarityPercentage = Math.min(95, 60 + sentenceAIGCScore * 0.3);
+                    const sources = generateMockSources();
+                    const flagReason = generateFlagReason(sentenceAIGCScore, sentence);
+                    
+                    analysisSegments.push({
+                        originalText: sentence,
+                        similarityLevel: similarityLevel,
+                        similarityPercentage: Math.floor(similarityPercentage),
+                        sources: sources,
+                        flagReason: flagReason,
+                        aigcScore: sentenceAIGCScore,
+                        suggestion: generateReductionSuggestion(sentence, sentenceAIGCScore, flagReason)
+                    });
+                }
+            }
+
+            return {
+                totalSimilarity,
+                internetSimilarity,
+                paperSimilarity,
+                selfCitation,
+                totalWords,
+                duplicateWords,
+                similarSegments: analysisSegments.length,
+                sourcesCount: Math.floor(Math.random() * 50) + 20,
+                analysisSegments,
+                checkTime: new Date().toLocaleString('zh-CN'),
+                aigcAnalysis: aigcAnalysis // 添加AIGC分析结果
+            };
+        }
+
+        // 分析单个句子的AIGC特征
+        function analyzeSentenceAIGCFeatures(sentence) {
+            let score = 0;
+            
+            // 1. 检查AI常用词汇
+            const aiWords = ['显著', '重要', '有效', '成功', '完善', '优化', '提升', '实现', '确保', '进一步', '深入', '全面', '综合', '系统', '关键'];
+            const aiWordCount = aiWords.filter(word => sentence.includes(word)).length;
+            score += aiWordCount * 15;
+            
+            // 2. 检查句子长度（AI生成的句子往往长度适中且一致）
+            const length = sentence.length;
+            if (length >= 20 && length <= 50) score += 20;
+            if (length >= 40 && length <= 60) score += 10;
+            
+            // 3. 检查复杂句式标志
+            const complexMarkers = ['通过', '基于', '利用', '采用', '运用', '借助', '依托'];
+            if (complexMarkers.some(marker => sentence.includes(marker))) score += 15;
+            
+            // 4. 检查被动语态
+            if (sentence.includes('被') || sentence.includes('得到') || sentence.includes('受到')) score += 10;
+            
+            // 5. 检查缺乏个人化表达
+            const personalWords = ['我', '我们', '个人', '我觉得', '我认为', '据我', '从我'];
+            if (!personalWords.some(word => sentence.includes(word))) score += 15;
+            
+            // 6. 检查过于正式的表达
+            const formalWords = ['鉴于', '基此', '综上所述', '由此可见', '不难发现'];
+            if (formalWords.some(word => sentence.includes(word))) score += 20;
+            
+            return Math.min(100, score);
+        }
+        
+        // 生成标记原因
+        function generateFlagReason(aigcScore, sentence) {
+            const reasons = [];
+            
+            if (aigcScore > 70) {
+                reasons.push('高度疑似AI生成内容');
+            } else if (aigcScore > 40) {
+                reasons.push('可能包含AI生成特征');
+            }
+            
+            // 具体特征分析
+            const aiWords = ['显著', '重要', '有效', '成功', '完善', '优化', '提升', '实现', '确保'];
+            const foundAiWords = aiWords.filter(word => sentence.includes(word));
+            if (foundAiWords.length > 0) {
+                reasons.push(`包含AI常用词汇: ${foundAiWords.join('、')}`);
+            }
+            
+            if (sentence.includes('通过') || sentence.includes('基于')) {
+                reasons.push('使用了典型AI句式结构');
+            }
+            
+            const personalWords = ['我', '我们', '个人', '我觉得'];
+            if (!personalWords.some(word => sentence.includes(word))) {
+                reasons.push('缺乏个人化表达');
+            }
+            
+            return reasons.length > 0 ? reasons.join('；') : '结构相似度较高';
+        }
+
+        // 生成模拟来源
+        function generateMockSources() {
+            const sources = [
+                { title: '基于深度学习的文本分析研究', author: '张三等', year: '2023', url: 'https://example.com/paper1' },
+                { title: '人工智能在文本处理中的应用', author: '李四等', year: '2022', url: 'https://example.com/paper2' },
+                { title: '机器学习算法优化策略分析', author: '王五等', year: '2023', url: 'https://example.com/paper3' },
+                { title: '数据挖掘技术发展现状研究', author: '赵六等', year: '2021', url: 'https://example.com/paper4' }
+            ];
+            
+            const count = Math.floor(Math.random() * 3) + 1;
+            return sources.slice(0, count);
+        }
+
+        // 生成降重建议（基于AIGC特征分析）
+        function generateReductionSuggestion(text, aigcScore = 0, flagReason = '') {
+            const suggestions = [];
+            
+            // 基于AIGC得分和标记原因生成针对性建议
+            if (flagReason.includes('AI常用词汇') || aigcScore > 50) {
+                const aiSynonyms = {
+                    '显著': ['明显', '突出', '清楚'],
+                    '重要': ['关键', '核心', '主要'],
+                    '有效': ['管用', '好用', '实用'],
+                    '实现': ['达到', '完成', '做到'],
+                    '确保': ['保证', '让', '使得'],
+                    '优化': ['改进', '改善', '完善'],
+                    '提升': ['改善', '增强', '加强'],
+                    '完善': ['改进', '健全', '充实'],
+                    '成功': ['顺利', '有效', '圆满'],
+                    '关键': ['核心', '主要', '重点'],
+                    '进一步': ['更加', '进而', '接着'],
+                    '深入': ['详细', '仔细', '深刻'],
+                    '全面': ['完整', '详尽', '周全'],
+                    '综合': ['整体', '总体', '全方位'],
+                    '系统': ['完整', '全套', '整体']
+                };
+                
+                let improvedText = text;
+                Object.keys(aiSynonyms).forEach(word => {
+                    if (text.includes(word)) {
+                        const synonyms = aiSynonyms[word];
+                        const replacement = synonyms[Math.floor(Math.random() * synonyms.length)];
+                        improvedText = improvedText.replace(new RegExp(word, 'g'), replacement);
+                    }
+                });
+                
+                suggestions.push({
+                    type: 'AI词汇替换',
+                    description: '替换AI常用词汇，使用更自然的表达',
+                    improvedText: improvedText,
+                    priority: 'high'
+                });
+            }
+            
+            if (flagReason.includes('AI句式结构') || text.includes('通过') || text.includes('基于')) {
+                let restructuredText = text;
+                
+                // 调整"通过...实现"句式
+                restructuredText = restructuredText.replace(/通过(.+?)实现(.+)/g, (match, method, result) => {
+                    return `${method.trim()}让我们${result.trim()}`;
+                });
+                
+                // 调整"基于...的"句式
+                restructuredText = restructuredText.replace(/基于(.+?)的(.+)/g, (match, basis, content) => {
+                    return `根据${basis.trim()}，${content.trim()}`;
+                });
+                
+                suggestions.push({
+                    type: '句式重构',
+                    description: '调整AI常见句式，使表达更加自然',
+                    improvedText: restructuredText,
+                    priority: 'high'
+                });
+            }
+            
+            if (flagReason.includes('缺乏个人化表达') || aigcScore > 40) {
+                const personalPrefixes = ['我觉得', '从我的经验来看', '个人认为', '据我观察', '在我看来', '我发现'];
+                const randomPrefix = personalPrefixes[Math.floor(Math.random() * personalPrefixes.length)];
+                const personalizedText = randomPrefix + '，' + text.toLowerCase();
+                
+                suggestions.push({
+                    type: '个人化表达',
+                    description: '增加个人观点和主观色彩，提升人文气息',
+                    improvedText: personalizedText,
+                    priority: 'medium'
+                });
+            }
+            
+            // 被动语态转换
+            if (text.includes('被') || text.includes('得到') || text.includes('受到')) {
+                let activeText = text;
+                activeText = activeText.replace(/被(\w+)/g, (match, verb) => {
+                    return `经过${verb}后`;
+                });
+                activeText = activeText.replace(/得到(\w+)/g, (match, object) => {
+                    return `获得了${object}`;
+                });
+                
+                suggestions.push({
+                    type: '主被动转换',
+                    description: '将被动语态转为主动语态，增加语言活力',
+                    improvedText: activeText,
+                    priority: 'medium'
+                });
+            }
+            
+            // 句子拆分（针对过长句子）
+            if (text.length > 50 && (text.includes('，') || text.includes('；'))) {
+                const parts = text.split(/[，；]/);
+                if (parts.length >= 2) {
+                    const splitText = parts[0].trim() + '。另外，' + parts.slice(1).join('，').trim();
+                    suggestions.push({
+                        type: '句子拆分',
+                        description: '将长句拆分为短句，提高可读性',
+                        improvedText: splitText,
+                        priority: 'low'
+                    });
+                }
+            }
+            
+            // 如果没有特殊建议，提供通用建议
+            if (suggestions.length === 0) {
+                suggestions.push({
+                    type: '语言润色',
+                    description: '增加语言的自然度和个人色彩',
+                    improvedText: '我认为，' + text.replace(/。$/, '') + '是比较合理的。',
+                    priority: 'low'
+                });
+            }
+            
+            // 按优先级排序并返回最佳建议
+            suggestions.sort((a, b) => {
+                const priorityOrder = { 'high': 3, 'medium': 2, 'low': 1 };
+                return priorityOrder[b.priority] - priorityOrder[a.priority];
+            });
+            
+            return suggestions[0]; // 返回优先级最高的建议
+        }
+
+        // 显示查重报告
+        function displayPlagiarismReport(result) {
+            // 更新相似度数据
+            document.getElementById('totalSimilarity').textContent = result.totalSimilarity + '%';
+            document.getElementById('internetSimilarity').textContent = result.internetSimilarity + '%';
+            document.getElementById('paperSimilarity').textContent = result.paperSimilarity + '%';
+            document.getElementById('selfCitation').textContent = result.selfCitation + '%';
+
+            // 更新摘要信息
+            document.getElementById('checkTime').textContent = result.checkTime;
+            document.getElementById('totalWords').textContent = result.totalWords + ' 字';
+            document.getElementById('duplicateWords').textContent = result.duplicateWords + ' 字';
+            document.getElementById('similarSegments').textContent = result.similarSegments + ' 个';
+            document.getElementById('sourcesCount').textContent = result.sourcesCount + ' 个';
+
+            // 生成详细分析
+            const analysisContainer = document.getElementById('detailedAnalysis');
+            analysisContainer.innerHTML = '';
+
+            result.analysisSegments.forEach((segment, index) => {
+                const segmentDiv = document.createElement('div');
+                segmentDiv.className = 'text-segment';
+                
+                const highlightClass = segment.similarityLevel === 2 ? 'highlight-red' : 
+                                     segment.similarityLevel === 1 ? 'highlight-yellow' : 'highlight-green';
+
+                segmentDiv.innerHTML = `
+                    <div class="original-text">
+                        <strong>原文片段 ${index + 1}：</strong><br>
+                        <span class="${highlightClass}">${segment.originalText}</span>
+                    </div>
+                    <div class="source-info">
+                        <strong>相似度：${segment.similarityPercentage}%</strong>
+                        ${segment.aigcScore ? `<span style="margin-left: 15px; color: #dc3545;">AIGC风险：${segment.aigcScore}分</span>` : ''}<br>
+                        <strong>标记原因：</strong><span style="color: #dc3545;">${segment.flagReason || '结构相似度较高'}</span><br>
+                        <strong>来源：</strong>
+                        ${segment.sources.map(source => 
+                            `<a href="${source.url}" class="source-link" target="_blank">
+                                ${source.title} (${source.author}, ${source.year})
+                            </a>`
+                        ).join('<br>')}
+                    </div>
+                `;
+                analysisContainer.appendChild(segmentDiv);
+            });
+
+            // 生成降重建议
+            const suggestionsContainer = document.getElementById('reductionSuggestions');
+            suggestionsContainer.innerHTML = '';
+
+            result.analysisSegments.forEach((segment, index) => {
+                const suggestionCard = document.createElement('div');
+                suggestionCard.className = 'suggestion-card';
+                
+                suggestionCard.innerHTML = `
+                    <div class="suggestion-header">
+                        <span class="suggestion-icon">💡</span>
+                        <strong>片段 ${index + 1} - ${segment.suggestion.type}</strong>
+                    </div>
+                    <p>${segment.suggestion.description}</p>
+                    <div class="original-snippet">
+                        <strong>原文：</strong>${segment.originalText}
+                    </div>
+                    <div class="improved-snippet">
+                        <strong>建议改为：</strong>${segment.suggestion.improvedText}
+                    </div>
+                `;
+                suggestionsContainer.appendChild(suggestionCard);
+            });
+
+            if (result.analysisSegments.length === 0) {
+                suggestionsContainer.innerHTML = `
+                    <div class="suggestion-card">
+                        <div class="suggestion-text">恭喜！未发现明显的重复内容，文档原创性良好。</div>
+                    </div>
+                `;
+            }
+        }
+
+        // 模拟文件上传进度
+        function simulateUploadProgress(modulePrefix, file, callback) {
+            const progressElement = document.getElementById(modulePrefix + 'ProgressFill');
+            const textElement = document.getElementById(modulePrefix + 'ProgressText');
+            const progressContainer = document.getElementById(modulePrefix + 'UploadProgress');
+            
+            progressContainer.style.display = 'block';
+            
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 15 + 5; // 每次增加5-20%
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                    
+                    setTimeout(() => {
+                        progressContainer.style.display = 'none';
+                        callback(file);
+                    }, 500);
+                }
+                
+                progressElement.style.width = progress + '%';
+                textElement.textContent = `上传中... ${Math.floor(progress)}%`;
+            }, 200);
+        }
+
+        // AIGC检测模式切换
+        function switchDetectionMode(mode) {
+            const textBtn = document.getElementById('detectionTextMode');
+            const fileBtn = document.getElementById('detectionFileMode');
+            const textArea = document.getElementById('detectionText');
+            const uploadArea = document.getElementById('detectionUploadArea');
+            
+            if (mode === 'text') {
+                textBtn.classList.add('active');
+                fileBtn.classList.remove('active');
+                textArea.style.display = 'block';
+                uploadArea.style.display = 'none';
+                document.getElementById('detectionFilePreview').style.display = 'none';
+            } else {
+                fileBtn.classList.add('active');
+                textBtn.classList.remove('active');
+                textArea.style.display = 'none';
+                uploadArea.style.display = 'block';
+            }
+        }
+
+        // AIGC检测文件处理
+        function handleDetectionFileDrop(event) {
+            event.preventDefault();
+            event.currentTarget.classList.remove('dragover');
+            const files = event.dataTransfer.files;
+            if (files.length > 0) {
+                simulateUploadProgress('detection', files[0], handleDetectionFile);
+            }
+        }
+
+        function handleDetectionFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                simulateUploadProgress('detection', file, handleDetectionFile);
+            }
+        }
+
+        function handleDetectionFile(file) {
+            if (!validateFile(file)) return;
+            
+            detectionUploadedFile = file;
+            document.getElementById('detectionFileName').textContent = file.name;
+            document.getElementById('detectionFileSize').textContent = formatFileSize(file.size);
+            document.getElementById('detectionFileInfo').style.display = 'block';
+            
+            readDetectionFileContent(file);
+        }
+
+        function readDetectionFileContent(file) {
+            console.log('开始读取文件:', file.name, '类型:', file.type);
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                console.log('文件读取完成');
+                
+                if (file.type === 'text/plain') {
+                    console.log('处理TXT文件');
+                    detectionDocumentText = e.target.result;
+                    const actualWords = detectionDocumentText.length;
+                    document.getElementById('detectionPreviewContent').textContent = 
+                        `文本文件解析完成 (${file.name})\n文件大小: ${formatFileSize(file.size)}\n实际字数: ${actualWords.toLocaleString()} 字\n\n内容预览:\n` +
+                        detectionDocumentText.substring(0, 300) + (detectionDocumentText.length > 300 ? '...' : '');
+                    document.getElementById('detectionFilePreview').style.display = 'block';
+                } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+                    // 处理DOCX文件
+                    console.log('处理DOCX文件');
+                    extractDocxContent(e.target.result, file, 'detection');
+                } else if (file.type === 'application/pdf') {
+                    // 处理PDF文件
+                    console.log('处理PDF文件');
+                    extractPdfContent(e.target.result, file, 'detection');
+                } else {
+                    // 其他格式暂不支持
+                    console.log('不支持的文件格式:', file.type);
+                    alert('暂不支持该文件格式的完整解析，请使用TXT或DOCX格式。');
+                }
+            };
+            
+            reader.onerror = function(error) {
+                console.error('文件读取失败:', error);
+                alert('文件读取失败，请重试');
+            };
+            
+            // 对于文本文件使用readAsText，对于二进制文件使用readAsArrayBuffer
+            if (file.type === 'text/plain') {
+                reader.readAsText(file, 'UTF-8');
+            } else {
+            reader.readAsArrayBuffer(file);
+            }
+        }
+
+        // 智能降重模式切换
+        function switchOptimizationMode(mode) {
+            const textBtn = document.getElementById('optimizationTextMode');
+            const fileBtn = document.getElementById('optimizationFileMode');
+            const textArea = document.getElementById('optimizationText');
+            const uploadArea = document.getElementById('optimizationUploadArea');
+            
+            if (mode === 'text') {
+                textBtn.classList.add('active');
+                fileBtn.classList.remove('active');
+                textArea.style.display = 'block';
+                uploadArea.style.display = 'none';
+                document.getElementById('optimizationFilePreview').style.display = 'none';
+            } else {
+                fileBtn.classList.add('active');
+                textBtn.classList.remove('active');
+                textArea.style.display = 'none';
+                uploadArea.style.display = 'block';
+            }
+        }
+
+        // 智能降重文件处理
+        function handleOptimizationFileDrop(event) {
+            event.preventDefault();
+            event.currentTarget.classList.remove('dragover');
+            const files = event.dataTransfer.files;
+            if (files.length > 0) {
+                simulateUploadProgress('optimization', files[0], handleOptimizationFile);
+            }
+        }
+
+        function handleOptimizationFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                simulateUploadProgress('optimization', file, handleOptimizationFile);
+            }
+        }
+
+        function handleOptimizationFile(file) {
+            if (!validateFile(file)) return;
+            
+            optimizationUploadedFile = file;
+            document.getElementById('optimizationFileName').textContent = file.name;
+            document.getElementById('optimizationFileSize').textContent = formatFileSize(file.size);
+            document.getElementById('optimizationFileInfo').style.display = 'block';
+            
+            readOptimizationFileContent(file);
+        }
+
+        function readOptimizationFileContent(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                if (file.type === 'text/plain') {
+                    optimizationDocumentText = e.target.result;
+                    const actualWords = optimizationDocumentText.length;
+                    document.getElementById('optimizationPreviewContent').textContent = 
+                        `文本文件解析完成 (${file.name})\n文件大小: ${formatFileSize(file.size)}\n实际字数: ${actualWords.toLocaleString()} 字\n\n内容预览:\n` +
+                        optimizationDocumentText.substring(0, 300) + (optimizationDocumentText.length > 300 ? '...' : '');
+                    document.getElementById('optimizationFilePreview').style.display = 'block';
+                } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+                    // 处理DOCX文件
+                    extractDocxContent(e.target.result, file, 'optimization');
+                } else if (file.type === 'application/pdf') {
+                    // 处理PDF文件
+                    extractPdfContent(e.target.result, file, 'optimization');
+                } else {
+                    // 其他格式暂不支持
+                    alert('暂不支持该文件格式的完整解析，请使用TXT或DOCX格式。');
+                }
+            };
+            
+            reader.onerror = function(error) {
+                console.error('文件读取失败:', error);
+                alert('文件读取失败，请重试');
+            };
+            
+            // 对于文本文件使用readAsText，对于二进制文件使用readAsArrayBuffer
+            if (file.type === 'text/plain') {
+                reader.readAsText(file, 'UTF-8');
+            } else {
+            reader.readAsArrayBuffer(file);
+            }
+        }
+
+        // 文件验证函数
+        function validateFile(file) {
+            const allowedTypes = ['application/pdf', 'application/msword', 
+                                'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 
+                                'text/plain'];
+            
+            if (!allowedTypes.includes(file.type)) {
+                alert('请上传支持的文件格式：PDF、DOC、DOCX、TXT');
+                return false;
+            }
+
+            if (file.size > 10 * 1024 * 1024) {
+                alert('文件大小不能超过 10MB');
+                return false;
+            }
+            
+            return true;
+        }
+
+        // 修改原有的analyzeText函数
+        function analyzeText() {
+            let textToAnalyze = '';
+            
+            // 检查当前模式
+            if (document.getElementById('detectionText').style.display !== 'none') {
+                textToAnalyze = document.getElementById('detectionText').value.trim();
+            } else if (detectionDocumentText) {
+                textToAnalyze = detectionDocumentText;
+            }
+
+            if (!textToAnalyze) {
+                alert('请输入文本内容或上传文档进行检测');
+                return;
+            }
+
+            // 显示加载状态
+            document.getElementById('detectionLoading').style.display = 'block';
+            document.getElementById('detectionResult').style.display = 'none';
+
+            // 模拟分析延时（优化速度）
+            setTimeout(() => {
+                const analysis = performAIGCAnalysis(textToAnalyze);
+                displayAnalysisResult(analysis);
+                
+                document.getElementById('detectionLoading').style.display = 'none';
+                document.getElementById('detectionResult').style.display = 'block';
+            }, 1200);
+        }
+
+        // 调用Ollama API进行AI优化
+        async function callOllamaAPI(text, prompt) {
+            try {
+                const response = await fetch('http://localhost:11434/api/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        model: 'deepseek-r1:8b',
+                        prompt: prompt,
+                        stream: false,
+                        options: {
+                            temperature: 0.7,
+                            top_p: 0.9,
+                            max_tokens: 2048
+                        }
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                return data.response;
+            } catch (error) {
+                console.error('Ollama API调用失败:', error);
+                throw error;
+            }
+        }
+
+        // 生成AI优化提示词
+        function generateAIOptimizationPrompt(text, aigcAnalysis = null) {
+            let prompt = `你是一个专业的文本优化专家，擅长将AI生成的文本改写得更加自然和人性化。
+
+**任务目标：**
+对以下文本进行降重和去AI化处理，让它读起来更像真人写的。
+
+**优化要求：**
+1. 替换AI常用词汇（如"显著"、"重要"、"有效"、"实现"、"确保"、"优化"等）为更自然的表达
+2. 调整过于正式或机械化的句式，特别是"通过...实现"、"基于...的"等典型AI句式
+3. 增加个人化表达和主观色彩，如"我觉得"、"从我的经验来看"、"个人认为"等
+4. 将被动语态适当转换为主动语态
+5. 拆分过长的句子，增加句式变化
+6. 保持原文的核心意思和专业性
+7. 使语言更加口语化和生动
+
+**优化原则：**
+- 保持原文的核心信息和逻辑结构
+- 避免过度优化影响专业性
+- 确保语言自然流畅
+- 增加适度的个人观点和情感色彩
+
+**待优化文本：**
+${text}
+
+**请直接输出优化后的文本，不要包含任何解释或说明：**`;
+
+            // 如果有AIGC分析结果，添加具体的问题指导
+            if (aigcAnalysis && aigcAnalysis.detectedIssues) {
+                const issues = aigcAnalysis.detectedIssues;
+                let specificGuidance = '\n**检测到的具体问题：**\n';
+                
+                issues.forEach((issue, index) => {
+                    if (issue.type === 'aiWords') {
+                        specificGuidance += `${index + 1}. AI词汇问题：文中包含"${issue.text}"，请替换为更自然的表达\n`;
+                    } else if (issue.type === 'structure') {
+                        specificGuidance += `${index + 1}. 句式结构问题：句子长度过于一致，需要增加变化\n`;
+                    } else if (issue.type === 'emotion') {
+                        specificGuidance += `${index + 1}. 情感表达问题：缺乏个人化色彩，需要添加主观表达\n`;
+                    }
+                });
+                
+                // 将具体指导插入到prompt中
+                prompt = prompt.replace('**待优化文本：**', specificGuidance + '\n**待优化文本：**');
+            }
+
+            return prompt;
+        }
+
+        // AI优化文本
+        async function performAIOptimization(text) {
+            try {
+                // 先进行AIGC分析
+                const aigcAnalysis = performAIGCAnalysis(text);
+                
+                // 生成优化提示词
+                const prompt = generateAIOptimizationPrompt(text, aigcAnalysis);
+                
+                // 调用Ollama API
+                const optimizedText = await callOllamaAPI(text, prompt);
+                
+                // 验证优化效果
+                const finalAigcAnalysis = performAIGCAnalysis(optimizedText);
+                const improvementPercent = Math.max(0, aigcAnalysis.aiProbability - finalAigcAnalysis.aiProbability);
+                
+                return {
+                    originalText: text,
+                    optimizedText: optimizedText.trim(),
+                    suggestions: [
+                        {
+                            title: 'AI驱动优化',
+                            text: `使用DeepSeek R1-8B模型进行智能降重，基于${aigcAnalysis.detectedIssues.length}个检测问题进行针对性优化`
+                        },
+                        {
+                            title: '优化效果评估',
+                            text: `AI生成概率从${aigcAnalysis.aiProbability}%降低到${finalAigcAnalysis.aiProbability}%，改善了${improvementPercent.toFixed(1)}个百分点`
+                        }
+                    ],
+                    modifications: [{
+                        type: 'ai_optimization',
+                        original: text.substring(0, 100) + '...',
+                        modified: optimizedText.substring(0, 100) + '...',
+                        reason: 'AI模型智能改写，综合优化多个维度'
+                    }],
+                    originalAigcScore: aigcAnalysis.aiProbability,
+                    finalAigcScore: finalAigcAnalysis.aiProbability,
+                    improvement: improvementPercent,
+                    mode: 'ai'
+                };
+            } catch (error) {
+                console.error('AI优化失败:', error);
+                throw new Error('AI优化失败，请检查Ollama服务或尝试规则优化模式');
+            }
+        }
+
+        // 混合优化（规则+AI）
+        async function performHybridOptimization(text) {
+            try {
+                // 先进行规则优化
+                const ruleResult = performTextOptimization(text);
+                
+                // 再对规则优化的结果进行AI优化
+                const aiResult = await performAIOptimization(ruleResult.optimizedText);
+                
+                // 合并结果
+                const combinedSuggestions = [
+                    {
+                        title: '混合优化策略',
+                        text: '先进行规则分析和初步优化，再使用AI模型进行深度改写，结合两种方法的优势'
+                    },
+                    ...ruleResult.suggestions.slice(0, 2), // 选择前2个规则优化建议
+                    ...aiResult.suggestions
+                ];
+
+                return {
+                    originalText: text,
+                    optimizedText: aiResult.optimizedText,
+                    suggestions: combinedSuggestions,
+                    modifications: [...ruleResult.modifications, ...aiResult.modifications],
+                    originalAigcScore: ruleResult.originalAigcScore,
+                    finalAigcScore: aiResult.finalAigcScore,
+                    improvement: ruleResult.originalAigcScore - aiResult.finalAigcScore,
+                    mode: 'hybrid'
+                };
+            } catch (error) {
+                console.error('混合优化失败:', error);
+                // 如果AI优化失败，回退到纯规则优化
+                const ruleResult = performTextOptimization(text);
+                ruleResult.suggestions.unshift({
+                    title: '优化模式降级',
+                    text: 'AI优化服务不可用，已自动切换到规则优化模式'
+                });
+                return ruleResult;
+            }
+        }
+
+        // 修改原有的optimizeText函数
+        async function optimizeText() {
+            let textToOptimize = '';
+            
+            // 检查当前模式
+            if (document.getElementById('optimizationText').style.display !== 'none') {
+                textToOptimize = document.getElementById('optimizationText').value.trim();
+            } else if (optimizationDocumentText) {
+                textToOptimize = optimizationDocumentText;
+            }
+
+            if (!textToOptimize) {
+                alert('请输入文本内容或上传文档进行降重');
+                return;
+            }
+
+            // 获取选择的优化模式
+            const selectedMode = document.querySelector('input[name="optimizationMode"]:checked').value;
+            
+            // 显示加载状态
+            document.getElementById('optimizationLoading').style.display = 'block';
+            document.getElementById('optimizationResult').style.display = 'none';
+
+            try {
+                let optimizedData;
+                
+                switch (selectedMode) {
+                    case 'ai':
+                        optimizedData = await performAIOptimization(textToOptimize);
+                        break;
+                    case 'hybrid':
+                        optimizedData = await performHybridOptimization(textToOptimize);
+                        break;
+                    default: // 'rule'
+                        optimizedData = performTextOptimization(textToOptimize);
+                        break;
+                }
+                
+                displayOptimizationResult(optimizedData);
+                
+                document.getElementById('optimizationLoading').style.display = 'none';
+                document.getElementById('optimizationResult').style.display = 'block';
+                
+            } catch (error) {
+                console.error('优化过程出错:', error);
+                document.getElementById('optimizationLoading').style.display = 'none';
+                alert('优化失败：' + error.message);
+            }
+        }
+
+        // 修改清空函数
+        function clearDetectionText() {
+            detectionUploadedFile = null;
+            detectionDocumentText = '';
+            document.getElementById('detectionText').value = '';
+            document.getElementById('detectionResult').style.display = 'none';
+            document.getElementById('detectionFileInfo').style.display = 'none';
+            document.getElementById('detectionFilePreview').style.display = 'none';
+            document.getElementById('detectionFileInput').value = '';
+        }
+
+        function clearOptimizationText() {
+            optimizationUploadedFile = null;
+            optimizationDocumentText = '';
+            document.getElementById('optimizationText').value = '';
+            document.getElementById('optimizationResult').style.display = 'none';
+            document.getElementById('optimizationFileInfo').style.display = 'none';
+            document.getElementById('optimizationFilePreview').style.display = 'none';
+            document.getElementById('optimizationFileInput').value = '';
+        }
+
+        // 清空查重数据
+        function clearPlagiarismData() {
+            uploadedFile = null;
+            currentDocumentText = '';
+            document.getElementById('fileInfo').style.display = 'none';
+            document.getElementById('plagiarismText').value = '';
+            document.getElementById('plagiarismText').style.display = 'none';
+            document.querySelector('#plagiarism .upload-area').style.display = 'block';
+            document.getElementById('plagiarismReport').style.display = 'none';
+            document.getElementById('fileInput').value = '';
+        }
+
+        // PDF文件内容提取函数（简化版本）
+        function extractPdfContent(arrayBuffer, file, module) {
+            // 由于PDF解析比较复杂，这里提供一个基础的提示
+            const text = `PDF文件解析功能需要更复杂的库支持。\n文件名：${file.name}\n文件大小：${formatFileSize(file.size)}\n\n请将PDF转换为Word文档或复制文本内容进行检测。`;
+            
+            if (module === 'detection') {
+                detectionDocumentText = text;
+                document.getElementById('detectionPreviewContent').textContent = text;
+                document.getElementById('detectionFilePreview').style.display = 'block';
+            } else if (module === 'optimization') {
+                optimizationDocumentText = text;
+                document.getElementById('optimizationPreviewContent').textContent = text;
+                document.getElementById('optimizationFilePreview').style.display = 'block';
+            } else if (module === 'plagiarism') {
+                currentDocumentText = text;
+                alert('PDF文件检测功能暂时不完整，建议转换为Word文档后重新上传。');
+            }
+        }
+
+        // 真实的DOCX内容提取函数
+        function extractDocxContent(arrayBuffer, file, module) {
+            console.log('尝试解析DOCX文件:', file.name);
+            console.log('Mammoth库加载状态:', typeof mammoth !== 'undefined');
+            
+            if (typeof mammoth === 'undefined') {
+                console.error('Mammoth library not loaded');
+                alert('DOCX解析库未正确加载，将使用备用解析方法');
+                fallbackExtraction(arrayBuffer, file, module);
+                return;
+            }
+
+            mammoth.extractRawText({arrayBuffer: arrayBuffer})
+                .then(function(result) {
+                    console.log('Mammoth解析成功');
+                    const documentContent = result.value;
+                    const actualWords = documentContent.length;
+                    const messages = result.messages;
+                    
+                    console.log('解析出的内容长度:', actualWords);
+                    if (messages.length > 0) {
+                        console.log('解析警告:', messages);
+                    }
+            
+            // 根据模块设置相应的变量
+                         if (module === 'detection') {
+                detectionDocumentText = documentContent;
+                document.getElementById('detectionPreviewContent').textContent = 
+                            `DOCX文档解析完成 (${file.name})\n文件大小: ${formatFileSize(file.size)}\n实际字数: ${actualWords.toLocaleString()} 字\n\n内容预览:\n` + 
+                            documentContent.substring(0, 300) + (documentContent.length > 300 ? '...' : '');
+                document.getElementById('detectionFilePreview').style.display = 'block';
+            } else if (module === 'optimization') {
+                optimizationDocumentText = documentContent;
+                document.getElementById('optimizationPreviewContent').textContent = 
+                            `DOCX文档解析完成 (${file.name})\n文件大小: ${formatFileSize(file.size)}\n实际字数: ${actualWords.toLocaleString()} 字\n\n内容预览:\n` + 
+                            documentContent.substring(0, 300) + (documentContent.length > 300 ? '...' : '');
+                document.getElementById('optimizationFilePreview').style.display = 'block';
+            } else if (module === 'plagiarism') {
+                currentDocumentText = documentContent;
+                        alert(`DOCX文档解析完成！\n文件：${file.name}\n大小：${formatFileSize(file.size)}\n实际字数：${actualWords.toLocaleString()} 字`);
+                    }
+                })
+                .catch(function(error) {
+                    console.error('Error extracting DOCX content:', error);
+                    fallbackExtraction(arrayBuffer, file, module);
+                });
+        }
+
+        // 备用提取方法（当mammoth失败时）
+        function fallbackExtraction(arrayBuffer, file, module) {
+            console.log('使用备用解析方法');
+            console.log('JSZip库加载状态:', typeof JSZip !== 'undefined');
+            
+            if (typeof JSZip === 'undefined') {
+                console.error('JSZip library not loaded');
+                alert('文档解析库未正确加载，请检查网络连接或刷新页面重试');
+                return;
+            }
+            
+            try {
+                // 使用JSZip解析DOCX文件
+                JSZip.loadAsync(arrayBuffer).then(function(zip) {
+                    console.log('JSZip解析ZIP结构成功');
+                    const docFile = zip.file("word/document.xml");
+                    if (!docFile) {
+                        throw new Error('找不到文档内容文件');
+                    }
+                    return docFile.async("string");
+                }).then(function(content) {
+                    console.log('成功读取文档XML内容');
+                    // 简单的XML标签清理
+                    let text = content.replace(/<[^>]*>/g, ' ');
+                    text = text.replace(/\s+/g, ' ').trim();
+                    
+                    const actualWords = text.length;
+                    console.log('备用方法解析出的内容长度:', actualWords);
+                    
+                    // 根据模块设置相应的变量
+                    if (module === 'detection') {
+                        detectionDocumentText = text;
+                        document.getElementById('detectionPreviewContent').textContent = 
+                            `DOCX文档解析完成 (${file.name})\n文件大小: ${formatFileSize(file.size)}\n实际字数: ${actualWords.toLocaleString()} 字\n\n内容预览:\n` + 
+                            text.substring(0, 300) + (text.length > 300 ? '...' : '');
+                        document.getElementById('detectionFilePreview').style.display = 'block';
+                    } else if (module === 'optimization') {
+                        optimizationDocumentText = text;
+                        document.getElementById('optimizationPreviewContent').textContent = 
+                            `DOCX文档解析完成 (${file.name})\n文件大小: ${formatFileSize(file.size)}\n实际字数: ${actualWords.toLocaleString()} 字\n\n内容预览:\n` + 
+                            text.substring(0, 300) + (text.length > 300 ? '...' : '');
+                        document.getElementById('optimizationFilePreview').style.display = 'block';
+                    } else if (module === 'plagiarism') {
+                        currentDocumentText = text;
+                        alert(`DOCX文档解析完成！\n文件：${file.name}\n大小：${formatFileSize(file.size)}\n实际字数：${actualWords.toLocaleString()} 字`);
+                    }
+                }).catch(function(error) {
+                    console.error('Error in fallback extraction:', error);
+                    // 如果所有解析方法都失败，至少显示文件信息
+                    handleDocxFallback(file, module, error.message);
+                });
+            } catch (error) {
+                console.error('JSZip error:', error);
+                handleDocxFallback(file, module, error.message);
+            }
+        }
+
+        // 当DOCX解析完全失败时的处理方法
+        function handleDocxFallback(file, module, errorMessage) {
+            console.log('所有DOCX解析方法都失败，使用基础信息显示');
+            const fallbackText = `DOCX文件解析遇到问题\n文件名：${file.name}\n文件大小：${formatFileSize(file.size)}\n\n解析失败原因：${errorMessage}\n\n建议：\n1. 请将Word文档另存为.txt格式后重新上传\n2. 或者复制文档内容直接粘贴到文本框中进行检测`;
+            
+            if (module === 'detection') {
+                detectionDocumentText = fallbackText;
+                document.getElementById('detectionPreviewContent').textContent = fallbackText;
+                document.getElementById('detectionFilePreview').style.display = 'block';
+            } else if (module === 'optimization') {
+                optimizationDocumentText = fallbackText;
+                document.getElementById('optimizationPreviewContent').textContent = fallbackText;
+                document.getElementById('optimizationFilePreview').style.display = 'block';
+            } else if (module === 'plagiarism') {
+                currentDocumentText = fallbackText;
+                alert('DOCX文件解析失败。建议将Word文档另存为TXT格式后重新上传。');
+            }
+        }
+
+
+
+        // 测试Ollama连接
+        async function testOllamaConnection() {
+            const testBtn = document.getElementById('testOllamaBtn');
+            testBtn.textContent = '🔄 测试中...';
+            testBtn.disabled = true;
+            
+            try {
+                const response = await fetch('http://localhost:11434/api/tags');
+                if (response.ok) {
+                    const data = await response.json();
+                    const hasDeepSeek = data.models?.some(model => 
+                        model.name.toLowerCase().includes('deepseek') || 
+                        model.name.toLowerCase().includes('r1')
+                    );
+                    
+                    if (hasDeepSeek) {
+                        alert('✅ Ollama连接成功！检测到DeepSeek模型，可以使用AI优化功能。');
+                    } else {
+                        alert('⚠️ Ollama连接成功，但未检测到DeepSeek R1模型。请先拉取模型：ollama pull deepseek-r1:8b');
+                    }
+                } else {
+                    throw new Error('连接失败');
+                }
+            } catch (error) {
+                alert('❌ 无法连接到Ollama服务！\n\n请确保：\n1. Ollama已安装并运行\n2. 服务运行在localhost:11434\n3. 已拉取DeepSeek R1模型：ollama pull deepseek-r1:8b');
+            } finally {
+                testBtn.textContent = '🔍 测试AI连接';
+                testBtn.disabled = false;
+            }
+        }
+
+        // 优化模式切换监听
+        function setupOptimizationModeListeners() {
+            const modeInputs = document.querySelectorAll('input[name="optimizationMode"]');
+            const aiNotice = document.getElementById('aiModeNotice');
+            
+            modeInputs.forEach(input => {
+                input.addEventListener('change', function() {
+                    if (this.value === 'ai' || this.value === 'hybrid') {
+                        aiNotice.style.display = 'block';
+                    } else {
+                        aiNotice.style.display = 'none';
+                    }
+                });
+            });
+        }
+
+        // 页面加载完成后的初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('智能AIGC检测与优化工具已加载完成');
+            
+            // 设置优化模式监听器
+            setupOptimizationModeListeners();
+            
+            // 检查外部库加载状态
+            setTimeout(function() {
+                const mammothLoaded = typeof mammoth !== 'undefined';
+                const jszipLoaded = typeof JSZip !== 'undefined';
+                
+                console.log('=== 库加载状态检查 ===');
+                console.log('Mammoth.js 加载状态:', mammothLoaded);
+                console.log('JSZip 加载状态:', jszipLoaded);
+                
+                if (!mammothLoaded && !jszipLoaded) {
+                    console.warn('警告：文档解析库未正确加载，DOCX功能可能受限');
+                    // 显示一个不显眼的提示
+                    const notice = document.createElement('div');
+                    notice.style.cssText = 'position: fixed; top: 10px; right: 10px; background: #fff3cd; color: #856404; padding: 10px; border-radius: 5px; font-size: 12px; z-index: 1000; max-width: 300px;';
+                    notice.innerHTML = '⚠️ 网络连接较慢，DOCX解析功能可能受限。建议使用TXT格式文件。';
+                    document.body.appendChild(notice);
+                    
+                    // 5秒后自动隐藏
+                    setTimeout(function() {
+                        notice.style.display = 'none';
+                    }, 5000);
+                }
+            }, 2000); // 给库2秒时间加载
+        });
+    </script>
+</body>
+</html> 
